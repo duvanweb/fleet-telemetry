@@ -46,6 +46,48 @@ services:
       timeout: 10s
       retries: 10
 
+  db-migrate-vehicle:
+    image: migrate/migrate
+    volumes:
+      - ./services/vehicle-service/migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://fleet:fleet@postgres:5432/vehicle_db?sslmode=disable", "up"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  db-migrate-telemetry:
+    image: migrate/migrate
+    volumes:
+      - ./services/telemetry-service/migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://fleet:fleet@postgres:5432/telemetry_db?sslmode=disable", "up"]
+    depends_on:
+      db-migrate-vehicle:
+        condition: service_completed_successfully
+    restart: "no"
+
+  db-migrate-alert:
+    image: migrate/migrate
+    volumes:
+      - ./services/alert-service/migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://fleet:fleet@postgres:5432/alert_db?sslmode=disable", "up"]
+    depends_on:
+      db-migrate-telemetry:
+        condition: service_completed_successfully
+    restart: "no"
+
+  db-seed:
+    image: postgres:16-alpine
+    volumes:
+      - ./scripts/seed.sql:/seed.sql
+    environment:
+      PGPASSWORD: fleet
+    command: ["psql", "-h", "postgres", "-U", "fleet", "-d", "vehicle_db", "-f", "/seed.sql"]
+    depends_on:
+      db-migrate-vehicle:
+        condition: service_completed_successfully
+    restart: "no"
+
   vehicle-service:
     build:
       context: .
@@ -61,10 +103,10 @@ services:
       DB_SSLMODE: disable
       RABBITMQ_URL: amqp://fleet:fleet@rabbitmq:5672/
     depends_on:
-      postgres:
-        condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      db-seed:
+        condition: service_completed_successfully
 
   telemetry-service:
     build:
@@ -83,12 +125,12 @@ services:
       RABBITMQ_URL: amqp://fleet:fleet@rabbitmq:5672/
       VEHICLE_SERVICE_URL: http://vehicle-service:8081
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      db-migrate-telemetry:
+        condition: service_completed_successfully
 
   alert-service:
     build:
@@ -105,10 +147,10 @@ services:
       DB_SSLMODE: disable
       RABBITMQ_URL: amqp://fleet:fleet@rabbitmq:5672/
     depends_on:
-      postgres:
-        condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      db-migrate-alert:
+        condition: service_completed_successfully
 
   simulator:
     build:
@@ -116,7 +158,6 @@ services:
       dockerfile: apps/simulator/Dockerfile
     ports:
       - "8090:8090"
-    env_file: .env
     environment:
       TELEMETRY_SERVICE_URL: http://telemetry-service:8082
     depends_on:
