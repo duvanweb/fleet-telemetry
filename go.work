@@ -1,0 +1,9 @@
+go 1.26.1
+
+use (
+	./apps/simulator
+	./services/alert-service
+	./services/telemetry-service
+	./services/vehicle-service
+	./shared
+)

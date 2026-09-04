@@ -1,0 +1,53 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-build-test:
+    name: ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - service: shared
+            path: shared
+            module: fleet/shared
+          - service: vehicle-service
+            path: services/vehicle-service
+            module: fleet/vehicle-service
+          - service: telemetry-service
+            path: services/telemetry-service
+            module: fleet/telemetry-service
+          - service: alert-service
+            path: services/alert-service
+            module: fleet/alert-service
+          - service: simulator
+            path: apps/simulator
+            module: fleet/simulator
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: ${{ matrix.path }}
+          version: latest
+
+      - name: go vet
+        run: go vet ${{ matrix.module }}/...
+
+      - name: go test
+        run: go test -race -count=1 ${{ matrix.module }}/...
+
+      - name: go build
+        run: go build ${{ matrix.module }}/...
