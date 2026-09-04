@@ -7,10 +7,10 @@ import (
 
 	"github.com/lib/pq"
 
+	"fleet/shared/pkg/logger"
 	"fleet/telemetry-service/internal/core/domain"
 	"fleet/telemetry-service/internal/core/ports/repositories"
 	sqlqueries "fleet/telemetry-service/internal/infrastructure/postgres/repositories/outbox/sql"
-	"fleet/shared/pkg/logger"
 )
 
 // Dependencies holds the repository's injected dependencies.

@@ -3,9 +3,9 @@ package redis
 import (
 	"go.uber.org/fx"
 
-	"fleet/telemetry-service/internal/core/ports/resources"
 	"fleet/shared/pkg/env"
 	"fleet/shared/pkg/redisclient"
+	"fleet/telemetry-service/internal/core/ports/resources"
 )
 
 func newTelemetryCache(cache redisclient.Cache) resources.TelemetryCache {

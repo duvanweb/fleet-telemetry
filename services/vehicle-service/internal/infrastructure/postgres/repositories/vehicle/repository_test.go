@@ -11,12 +11,12 @@ import (
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 
+	"fleet/shared/pkg/logger"
 	"fleet/vehicle-service/internal/core/domain"
 	"fleet/vehicle-service/internal/core/ports/repositories"
 	vehiclerepo "fleet/vehicle-service/internal/infrastructure/postgres/repositories/vehicle"
 	vehiclesql "fleet/vehicle-service/internal/infrastructure/postgres/repositories/vehicle/sql"
 	"fleet/vehicle-service/test/data"
-	"fleet/shared/pkg/logger"
 )
 
 var errTest = errors.New("unexpected db error")
@@ -47,10 +47,10 @@ func TestVehicleRepository_Create(t *testing.T) {
 	vehicle := data.GetTestVehicle()
 
 	tests := []struct {
-		name          string
-		setup         func(mock sqlmock.Sqlmock)
+		name            string
+		setup           func(mock sqlmock.Sqlmock)
 		expectedVehicle domain.Vehicle
-		expectedError error
+		expectedError   error
 	}{
 		{
 			name: "works correctly",

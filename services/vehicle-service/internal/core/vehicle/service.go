@@ -7,9 +7,9 @@ import (
 
 	"github.com/oklog/ulid/v2"
 
+	"fleet/shared/pkg/logger"
 	"fleet/vehicle-service/internal/core/domain"
 	"fleet/vehicle-service/internal/core/ports/repositories"
-	"fleet/shared/pkg/logger"
 )
 
 // Repositories holds the repository dependencies for the vehicle service.

@@ -3,8 +3,8 @@ package telemetry
 import (
 	"go.uber.org/fx"
 
-	"fleet/telemetry-service/internal/core/ports/repositories"
 	"fleet/shared/pkg/logger"
+	"fleet/telemetry-service/internal/core/ports/repositories"
 )
 
 func newRepository(log logger.Logger, db repositories.Databaser) repositories.TelemetryRepository {

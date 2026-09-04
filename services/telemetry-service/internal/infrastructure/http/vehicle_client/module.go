@@ -3,8 +3,8 @@ package vehicle_client
 import (
 	"go.uber.org/fx"
 
-	"fleet/telemetry-service/internal/core/ports/resources"
 	"fleet/shared/pkg/env"
+	"fleet/telemetry-service/internal/core/ports/resources"
 )
 
 func newClient(cfg *Configuration) resources.VehicleChecker {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"fleet/telemetry-service/internal/infrastructure/sse"
 	"fleet/shared/pkg/logger"
+	"fleet/telemetry-service/internal/infrastructure/sse"
 )
 
 // Events is the HTTP controller for the SSE event stream endpoint.

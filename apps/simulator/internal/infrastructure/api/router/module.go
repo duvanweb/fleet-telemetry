@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/fx"
 
-	"fleet/simulator/internal/infrastructure/api/controllers"
 	"fleet/shared/pkg/logger"
+	"fleet/simulator/internal/infrastructure/api/controllers"
 )
 
 // Module registers all router and HTTP server components with FX.

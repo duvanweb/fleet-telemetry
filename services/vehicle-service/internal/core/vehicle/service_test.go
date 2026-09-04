@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"fleet/shared/pkg/logger"
 	"fleet/vehicle-service/internal/core/domain"
 	"fleet/vehicle-service/internal/core/ports/repositories/mocks"
 	"fleet/vehicle-service/internal/core/vehicle"
 	"fleet/vehicle-service/test/data"
-	"fleet/shared/pkg/logger"
 )
 
 var (

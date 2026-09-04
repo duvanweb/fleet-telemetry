@@ -3,10 +3,10 @@ package telemetry
 import (
 	"go.uber.org/fx"
 
+	"fleet/shared/pkg/logger"
 	"fleet/telemetry-service/internal/core/ports/repositories"
 	"fleet/telemetry-service/internal/core/ports/resources"
 	"fleet/telemetry-service/internal/core/ports/services"
-	"fleet/shared/pkg/logger"
 )
 
 func newService(log logger.Logger, repo repositories.TelemetryRepository, checker resources.VehicleChecker, cache resources.TelemetryCache) *Service {
