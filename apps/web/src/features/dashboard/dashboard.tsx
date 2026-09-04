@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { AlertsPanel } from './alerts-panel'
 import { FleetMap } from './fleet-map'
@@ -33,9 +34,14 @@ export default function Dashboard() {
       <header className='bg-white border-b border-gray-100 shadow-sm'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between'>
           <h1 className='text-lg font-semibold text-gray-800'>Fleet Dashboard</h1>
-          <div className='flex items-center gap-2 text-xs text-gray-400'>
-            <span className='w-2 h-2 rounded-full bg-green-400 animate-pulse' />
-            Live
+          <div className='flex items-center gap-4'>
+            <Link to='/simulator' className='text-sm text-blue-500 hover:text-blue-700'>
+              Simulator
+            </Link>
+            <div className='flex items-center gap-2 text-xs text-gray-400'>
+              <span className='w-2 h-2 rounded-full bg-green-400 animate-pulse' />
+              Live
+            </div>
           </div>
         </div>
       </header>
