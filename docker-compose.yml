@@ -48,13 +48,14 @@ services:
 
   vehicle-service:
     build:
-      context: ./services/vehicle-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/vehicle-service/Dockerfile
     ports:
       - "8081:8081"
     env_file: .env
     environment:
       DATABASE_URL: postgres://fleet:fleet@postgres:5432/vehicle_db?sslmode=disable
+      RABBITMQ_URL: amqp://fleet:fleet@rabbitmq:5672/
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,8 +64,8 @@ services:
 
   telemetry-service:
     build:
-      context: ./services/telemetry-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/telemetry-service/Dockerfile
     ports:
       - "8082:8082"
     env_file: .env
@@ -72,6 +73,7 @@ services:
       DATABASE_URL: postgres://fleet:fleet@postgres:5432/telemetry_db?sslmode=disable
       REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://fleet:fleet@rabbitmq:5672/
+      VEHICLE_SERVICE_URL: http://vehicle-service:8081
     depends_on:
       postgres:
         condition: service_healthy
@@ -82,8 +84,8 @@ services:
 
   alert-service:
     build:
-      context: ./services/alert-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/alert-service/Dockerfile
     ports:
       - "8083:8083"
     env_file: .env
@@ -98,8 +100,8 @@ services:
 
   simulator:
     build:
-      context: ./apps/simulator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/simulator/Dockerfile
     ports:
       - "8090:8090"
     env_file: .env
@@ -110,8 +112,8 @@ services:
 
   web:
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
     ports:
       - "3000:80"
     depends_on:
