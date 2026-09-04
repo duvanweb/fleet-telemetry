@@ -15,6 +15,7 @@ import (
 type Controllers struct {
 	fx.In
 
+	Alert  *controllers.Alert
 	Health *controllers.Health
 }
 
@@ -41,6 +42,9 @@ func (r *Router) start(basePath string) http.Handler {
 	r.server.Route(basePath, func(route chi.Router) {
 		route.Get("/health", r.controllers.Health.GetHealth)
 		route.Get("/ready", r.controllers.Health.GetReady)
+
+		route.Get("/alerts", r.controllers.Alert.GetAll)
+		route.Get("/vehicles/{vehicleId}/alerts", r.controllers.Alert.GetOpenByVehicle)
 	})
 
 	return r.server
