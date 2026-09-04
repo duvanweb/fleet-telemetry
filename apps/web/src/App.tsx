@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
+const Dashboard = lazy(() => import('./features/dashboard/dashboard'))
 const VehicleList = lazy(() => import('./features/vehicles/vehicle-list'))
 
 function LoadingFallback() {
@@ -16,8 +17,9 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
+          <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/vehicles' element={<VehicleList />} />
-          <Route path='*' element={<Navigate to='/vehicles' replace />} />
+          <Route path='*' element={<Navigate to='/dashboard' replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
