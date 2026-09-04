@@ -18,14 +18,18 @@ import (
 )
 
 var (
-	errTest = errors.New("unexpected error")
-	anyctx  = mock.Anything
+	errTest  = errors.New("unexpected error")
+	anyctx   = mock.Anything
 	anypoint = mock.Anything
+	anyttl   = mock.Anything
+	anystr   = mock.Anything
 )
 
+// Dependencies lists mocks in execution order of IngestTelemetry.
 type Dependencies struct {
-	Telemetry      *repomocks.TelemetryRepository
 	VehicleChecker *resmocks.VehicleChecker
+	Cache          *resmocks.TelemetryCache
+	Telemetry      *repomocks.TelemetryRepository
 }
 
 func newService(t *testing.T, deps Dependencies) *telemetry.Service {
@@ -33,7 +37,7 @@ func newService(t *testing.T, deps Dependencies) *telemetry.Service {
 	log, _ := logger.NewLogger()
 	return telemetry.NewService(log,
 		telemetry.Repositories{Telemetry: deps.Telemetry},
-		telemetry.Resources{VehicleChecker: deps.VehicleChecker},
+		telemetry.Resources{VehicleChecker: deps.VehicleChecker, Cache: deps.Cache},
 	)
 }
 
@@ -102,6 +106,12 @@ func TestService_IngestTelemetry(t *testing.T) {
 	checkerSuccessMock := &resmocks.VehicleChecker{}
 	checkerSuccessMock.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(true, nil)
 
+	cacheSuccessMock := &resmocks.TelemetryCache{}
+	cacheSuccessMock.On("CheckDedup", anyctx, anystr).Return(false, nil)
+	cacheSuccessMock.On("SetDedup", anyctx, anystr, anyttl).Return(nil)
+	cacheSuccessMock.On("GetLastPosition", anyctx, fixture.VehicleID).Return(domain.TelemetryPoint{}, false, nil)
+	cacheSuccessMock.On("SetLastPosition", anyctx, fixture.VehicleID, anypoint, anyttl).Return(nil)
+
 	repoSuccessMock := &repomocks.TelemetryRepository{}
 	repoSuccessMock.On("Create", anyctx, anypoint).Return(fixture, nil)
 
@@ -117,16 +127,47 @@ func TestService_IngestTelemetry(t *testing.T) {
 			point: validPoint,
 			dependencies: Dependencies{
 				VehicleChecker: checkerSuccessMock,
+				Cache:          cacheSuccessMock,
 				Telemetry:      repoSuccessMock,
+			},
+			expected: fixture,
+		},
+		{
+			name: "works correctly when point is out of order",
+			point: domain.TelemetryPoint{
+				VehicleID:       fixture.VehicleID,
+				Latitude:        fixture.Latitude,
+				Longitude:       fixture.Longitude,
+				DeviceTimestamp: time.Now().Add(-2 * time.Minute),
+			},
+			dependencies: Dependencies{
+				VehicleChecker: func() *resmocks.VehicleChecker {
+					m := &resmocks.VehicleChecker{}
+					m.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(true, nil)
+					return m
+				}(),
+				Cache: func() *resmocks.TelemetryCache {
+					m := &resmocks.TelemetryCache{}
+					m.On("CheckDedup", anyctx, anystr).Return(false, nil)
+					m.On("SetDedup", anyctx, anystr, anyttl).Return(nil)
+					m.On("GetLastPosition", anyctx, fixture.VehicleID).Return(
+						domain.TelemetryPoint{DeviceTimestamp: time.Now().Add(-1 * time.Minute)},
+						true, nil,
+					)
+					return m
+				}(),
+				Telemetry: func() *repomocks.TelemetryRepository {
+					m := &repomocks.TelemetryRepository{}
+					m.On("Create", anyctx, anypoint).Return(fixture, nil)
+					return m
+				}(),
 			},
 			expected: fixture,
 		},
 		{
 			name: "handles correctly when latitude is invalid",
 			point: domain.TelemetryPoint{
-				VehicleID:       fixture.VehicleID,
-				Latitude:        91.0,
-				Longitude:       fixture.Longitude,
+				VehicleID: fixture.VehicleID, Latitude: 91.0, Longitude: fixture.Longitude,
 				DeviceTimestamp: time.Now().Add(-1 * time.Second),
 			},
 			dependencies:  Dependencies{},
@@ -135,9 +176,7 @@ func TestService_IngestTelemetry(t *testing.T) {
 		{
 			name: "handles correctly when longitude is invalid",
 			point: domain.TelemetryPoint{
-				VehicleID:       fixture.VehicleID,
-				Latitude:        fixture.Latitude,
-				Longitude:       181.0,
+				VehicleID: fixture.VehicleID, Latitude: fixture.Latitude, Longitude: 181.0,
 				DeviceTimestamp: time.Now().Add(-1 * time.Second),
 			},
 			dependencies:  Dependencies{},
@@ -146,9 +185,7 @@ func TestService_IngestTelemetry(t *testing.T) {
 		{
 			name: "handles correctly when timestamp is zero",
 			point: domain.TelemetryPoint{
-				VehicleID: fixture.VehicleID,
-				Latitude:  fixture.Latitude,
-				Longitude: fixture.Longitude,
+				VehicleID: fixture.VehicleID, Latitude: fixture.Latitude, Longitude: fixture.Longitude,
 			},
 			dependencies:  Dependencies{},
 			expectedError: domain.ErrInvalidTimestamp,
@@ -156,9 +193,7 @@ func TestService_IngestTelemetry(t *testing.T) {
 		{
 			name: "handles correctly when timestamp is too far in the future",
 			point: domain.TelemetryPoint{
-				VehicleID:       fixture.VehicleID,
-				Latitude:        fixture.Latitude,
-				Longitude:       fixture.Longitude,
+				VehicleID: fixture.VehicleID, Latitude: fixture.Latitude, Longitude: fixture.Longitude,
 				DeviceTimestamp: time.Now().Add(10 * time.Minute),
 			},
 			dependencies:  Dependencies{},
@@ -169,55 +204,119 @@ func TestService_IngestTelemetry(t *testing.T) {
 			point: validPoint,
 			dependencies: Dependencies{
 				VehicleChecker: func() *resmocks.VehicleChecker {
-					mockChecker := &resmocks.VehicleChecker{}
-					mockChecker.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(false, nil)
-					return mockChecker
+					m := &resmocks.VehicleChecker{}
+					m.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(false, nil)
+					return m
 				}(),
 			},
 			expectedError: domain.ErrVehicleNotFound,
+		},
+		{
+			name:  "handles correctly when Redis dedup key exists",
+			point: validPoint,
+			dependencies: Dependencies{
+				VehicleChecker: func() *resmocks.VehicleChecker {
+					m := &resmocks.VehicleChecker{}
+					m.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(true, nil)
+					return m
+				}(),
+				Cache: func() *resmocks.TelemetryCache {
+					m := &resmocks.TelemetryCache{}
+					m.On("CheckDedup", anyctx, anystr).Return(true, nil)
+					return m
+				}(),
+			},
+			expectedError: domain.ErrDuplicateTelemetry,
+		},
+		{
+			name:  "handles correctly when DB returns duplicate telemetry",
+			point: validPoint,
+			dependencies: Dependencies{
+				VehicleChecker: func() *resmocks.VehicleChecker {
+					m := &resmocks.VehicleChecker{}
+					m.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(true, nil)
+					return m
+				}(),
+				Cache: func() *resmocks.TelemetryCache {
+					m := &resmocks.TelemetryCache{}
+					m.On("CheckDedup", anyctx, anystr).Return(false, nil)
+					m.On("SetDedup", anyctx, anystr, anyttl).Return(nil)
+					return m
+				}(),
+				Telemetry: func() *repomocks.TelemetryRepository {
+					m := &repomocks.TelemetryRepository{}
+					m.On("Create", anyctx, anypoint).Return(domain.TelemetryPoint{}, domain.ErrDuplicateTelemetry)
+					return m
+				}(),
+			},
+			expectedError: domain.ErrDuplicateTelemetry,
 		},
 		{
 			name:  "fails when VehicleChecker ExistsAndActive fails",
 			point: validPoint,
 			dependencies: Dependencies{
 				VehicleChecker: func() *resmocks.VehicleChecker {
-					mockChecker := &resmocks.VehicleChecker{}
-					mockChecker.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(false, errTest)
-					return mockChecker
+					m := &resmocks.VehicleChecker{}
+					m.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(false, errTest)
+					return m
 				}(),
 			},
 			expectedError: errTest,
 		},
 		{
-			name:  "handles correctly when telemetry is duplicate",
+			name:  "fails when Cache CheckDedup fails",
 			point: validPoint,
 			dependencies: Dependencies{
 				VehicleChecker: func() *resmocks.VehicleChecker {
-					mockChecker := &resmocks.VehicleChecker{}
-					mockChecker.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(true, nil)
-					return mockChecker
+					m := &resmocks.VehicleChecker{}
+					m.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(true, nil)
+					return m
 				}(),
-				Telemetry: func() *repomocks.TelemetryRepository {
-					mockRepo := &repomocks.TelemetryRepository{}
-					mockRepo.On("Create", anyctx, anypoint).Return(domain.TelemetryPoint{}, domain.ErrDuplicateTelemetry)
-					return mockRepo
+				Cache: func() *resmocks.TelemetryCache {
+					m := &resmocks.TelemetryCache{}
+					m.On("CheckDedup", anyctx, anystr).Return(false, errTest)
+					return m
 				}(),
 			},
-			expectedError: domain.ErrDuplicateTelemetry,
+			expectedError: errTest,
+		},
+		{
+			name:  "fails when Cache SetDedup fails",
+			point: validPoint,
+			dependencies: Dependencies{
+				VehicleChecker: func() *resmocks.VehicleChecker {
+					m := &resmocks.VehicleChecker{}
+					m.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(true, nil)
+					return m
+				}(),
+				Cache: func() *resmocks.TelemetryCache {
+					m := &resmocks.TelemetryCache{}
+					m.On("CheckDedup", anyctx, anystr).Return(false, nil)
+					m.On("SetDedup", anyctx, anystr, anyttl).Return(errTest)
+					return m
+				}(),
+			},
+			expectedError: errTest,
 		},
 		{
 			name:  "fails when repository Create fails",
 			point: validPoint,
 			dependencies: Dependencies{
 				VehicleChecker: func() *resmocks.VehicleChecker {
-					mockChecker := &resmocks.VehicleChecker{}
-					mockChecker.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(true, nil)
-					return mockChecker
+					m := &resmocks.VehicleChecker{}
+					m.On("ExistsAndActive", anyctx, fixture.VehicleID).Return(true, nil)
+					return m
+				}(),
+				Cache: func() *resmocks.TelemetryCache {
+					m := &resmocks.TelemetryCache{}
+					m.On("CheckDedup", anyctx, anystr).Return(false, nil)
+					m.On("SetDedup", anyctx, anystr, anyttl).Return(nil)
+					return m
 				}(),
 				Telemetry: func() *repomocks.TelemetryRepository {
-					mockRepo := &repomocks.TelemetryRepository{}
-					mockRepo.On("Create", anyctx, anypoint).Return(domain.TelemetryPoint{}, errTest)
-					return mockRepo
+					m := &repomocks.TelemetryRepository{}
+					m.On("Create", anyctx, anypoint).Return(domain.TelemetryPoint{}, errTest)
+					return m
 				}(),
 			},
 			expectedError: errTest,
@@ -238,6 +337,9 @@ func TestService_IngestTelemetry(t *testing.T) {
 
 			if tt.dependencies.VehicleChecker != nil {
 				tt.dependencies.VehicleChecker.AssertExpectations(t)
+			}
+			if tt.dependencies.Cache != nil {
+				tt.dependencies.Cache.AssertExpectations(t)
 			}
 			if tt.dependencies.Telemetry != nil {
 				tt.dependencies.Telemetry.AssertExpectations(t)
