@@ -6,8 +6,8 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
-	"fleet/telemetry-service/internal/infrastructure/sse"
 	"fleet/shared/pkg/logger"
+	"fleet/telemetry-service/internal/infrastructure/sse"
 )
 
 const (

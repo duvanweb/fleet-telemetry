@@ -5,10 +5,10 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
+	"fleet/shared/pkg/logger"
 	"fleet/telemetry-service/internal/core/ports/services"
 	"fleet/telemetry-service/internal/infrastructure/api/dtos"
 	apierrors "fleet/telemetry-service/internal/infrastructure/api/errors"
-	"fleet/shared/pkg/logger"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

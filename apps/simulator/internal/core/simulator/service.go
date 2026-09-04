@@ -10,10 +10,10 @@ import (
 	"go.uber.org/fx"
 	"golang.org/x/sync/errgroup"
 
+	"fleet/shared/pkg/logger"
 	"fleet/simulator/internal/core/domain"
 	"fleet/simulator/internal/core/ports/resources"
 	"fleet/simulator/internal/core/scenario"
-	"fleet/shared/pkg/logger"
 )
 
 // Service implements the simulator control logic.

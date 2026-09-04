@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"fleet/telemetry-service/internal/core/ports/repositories"
 	"fleet/shared/pkg/logger"
+	"fleet/telemetry-service/internal/core/ports/repositories"
 )
 
 const (

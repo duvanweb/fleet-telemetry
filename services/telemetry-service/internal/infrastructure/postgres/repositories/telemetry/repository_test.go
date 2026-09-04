@@ -10,11 +10,11 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
+	"fleet/shared/pkg/logger"
 	"fleet/telemetry-service/internal/core/domain"
 	"fleet/telemetry-service/internal/infrastructure/postgres/repositories/telemetry"
 	sqlqueries "fleet/telemetry-service/internal/infrastructure/postgres/repositories/telemetry/sql"
 	testdata "fleet/telemetry-service/test/data"
-	"fleet/shared/pkg/logger"
 )
 
 var errTest = errors.New("unexpected error")

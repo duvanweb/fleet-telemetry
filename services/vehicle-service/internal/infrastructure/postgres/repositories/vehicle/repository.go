@@ -8,11 +8,11 @@ import (
 
 	"github.com/lib/pq"
 
+	"fleet/shared/pkg/logger"
 	"fleet/vehicle-service/internal/core/domain"
 	"fleet/vehicle-service/internal/core/ports/repositories"
-	vehiclesql "fleet/vehicle-service/internal/infrastructure/postgres/repositories/vehicle/sql"
 	"fleet/vehicle-service/internal/infrastructure/postgres/models"
-	"fleet/shared/pkg/logger"
+	vehiclesql "fleet/vehicle-service/internal/infrastructure/postgres/repositories/vehicle/sql"
 )
 
 // Dependencies holds the repository's injected dependencies.
@@ -148,4 +148,3 @@ func (r *repository) Update(ctx context.Context, v domain.Vehicle) (domain.Vehic
 
 	return row.ToDomain(), nil
 }
-

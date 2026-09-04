@@ -3,8 +3,8 @@ package health
 import (
 	"context"
 
-	"fleet/telemetry-service/internal/core/domain"
 	"fleet/shared/pkg/logger"
+	"fleet/telemetry-service/internal/core/domain"
 )
 
 // Service implements services.HealthService.

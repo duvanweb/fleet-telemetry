@@ -7,11 +7,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"fleet/shared/pkg/logger"
 	"fleet/vehicle-service/internal/core/domain"
 	"fleet/vehicle-service/internal/core/ports/services"
 	"fleet/vehicle-service/internal/infrastructure/api/dtos"
 	apierrors "fleet/vehicle-service/internal/infrastructure/api/errors"
-	"fleet/shared/pkg/logger"
 )
 
 // Vehicle is the HTTP controller for vehicle-related endpoints.

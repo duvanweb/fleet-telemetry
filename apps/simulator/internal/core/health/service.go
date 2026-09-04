@@ -3,8 +3,8 @@ package health
 import (
 	"context"
 
-	"fleet/simulator/internal/core/domain"
 	"fleet/shared/pkg/logger"
+	"fleet/simulator/internal/core/domain"
 )
 
 // Service implements services.HealthService.

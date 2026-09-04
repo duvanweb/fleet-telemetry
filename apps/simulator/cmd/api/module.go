@@ -3,11 +3,11 @@ package main
 import (
 	"go.uber.org/fx"
 
+	"fleet/shared/pkg/logger"
 	"fleet/simulator/internal/core/health"
 	"fleet/simulator/internal/core/simulator"
 	"fleet/simulator/internal/infrastructure/api/router"
 	telemetryclient "fleet/simulator/internal/infrastructure/http/telemetry_client"
-	"fleet/shared/pkg/logger"
 )
 
 // Module assembles all FX modules for the simulator.

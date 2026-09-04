@@ -9,8 +9,8 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
-	"fleet/simulator/internal/core/ports/resources"
 	"fleet/shared/pkg/logger"
+	"fleet/simulator/internal/core/ports/resources"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -21,7 +21,7 @@ type Configuration struct {
 }
 
 type ingestRequest struct {
-	VehicleID       string `json:"vehicle_id"`
+	VehicleID       string  `json:"vehicle_id"`
 	Latitude        float64 `json:"latitude"`
 	Longitude       float64 `json:"longitude"`
 	DeviceTimestamp string  `json:"device_timestamp"`

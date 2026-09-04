@@ -23,9 +23,9 @@ var jsonConsumer = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // inboundMessage is the envelope format published by telemetry-service.
 type inboundMessage struct {
-	EventID    string              `json:"event_id"`
-	EventType  string              `json:"event_type"`
-	OccurredAt time.Time           `json:"occurred_at"`
+	EventID    string                `json:"event_id"`
+	EventType  string                `json:"event_type"`
+	OccurredAt time.Time             `json:"occurred_at"`
 	Payload    domain.TelemetryEvent `json:"payload"`
 }
 

@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"fleet/alert-service/internal/core/domain"
-	"fleet/alert-service/internal/core/stopped_detection"
 	svcmocks "fleet/alert-service/internal/core/ports/services/mocks"
+	"fleet/alert-service/internal/core/stopped_detection"
 	testdata "fleet/alert-service/test/data"
 	"fleet/shared/pkg/logger"
 )
@@ -58,13 +58,13 @@ func TestService_Evaluate(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name: "works correctly when same position under threshold",
+			name:       "works correctly when same position under threshold",
 			clockTimes: []time.Time{t0, t0, t0, t0.Add(30 * time.Second)},
 			events:     []domain.TelemetryEvent{posA, posB, posB, posB},
 			mockSetup:  func(m *svcmocks.AlertService) {},
 		},
 		{
-			name: "works correctly when same position at threshold creates alert",
+			name:       "works correctly when same position at threshold creates alert",
 			clockTimes: []time.Time{t0, t0, t0, t0.Add(2 * time.Minute)},
 			events:     []domain.TelemetryEvent{posA, posB, posB, posB},
 			mockSetup: func(m *svcmocks.AlertService) {
@@ -73,7 +73,7 @@ func TestService_Evaluate(t *testing.T) {
 			},
 		},
 		{
-			name: "works correctly when same position with open alert no duplicate",
+			name:       "works correctly when same position with open alert no duplicate",
 			clockTimes: []time.Time{t0, t0, t0, t0.Add(2 * time.Minute), t0.Add(3 * time.Minute)},
 			events:     []domain.TelemetryEvent{posA, posB, posB, posB, posB},
 			mockSetup: func(m *svcmocks.AlertService) {
@@ -82,7 +82,7 @@ func TestService_Evaluate(t *testing.T) {
 			},
 		},
 		{
-			name: "works correctly when different position resolves alert",
+			name:       "works correctly when different position resolves alert",
 			clockTimes: []time.Time{t0, t0, t0, t0.Add(2 * time.Minute), t0.Add(3 * time.Minute)},
 			events:     []domain.TelemetryEvent{posA, posB, posB, posB, posDiff},
 			mockSetup: func(m *svcmocks.AlertService) {
@@ -92,7 +92,7 @@ func TestService_Evaluate(t *testing.T) {
 			},
 		},
 		{
-			name: "fails when AlertService CreateAlert fails",
+			name:       "fails when AlertService CreateAlert fails",
 			clockTimes: []time.Time{t0, t0, t0, t0.Add(2 * time.Minute)},
 			events:     []domain.TelemetryEvent{posA, posB, posB, posB},
 			mockSetup: func(m *svcmocks.AlertService) {
@@ -102,7 +102,7 @@ func TestService_Evaluate(t *testing.T) {
 			expectedError: errTest,
 		},
 		{
-			name: "fails when AlertService ResolveAlert fails",
+			name:       "fails when AlertService ResolveAlert fails",
 			clockTimes: []time.Time{t0, t0, t0, t0.Add(2 * time.Minute), t0.Add(3 * time.Minute)},
 			events:     []domain.TelemetryEvent{posA, posB, posB, posB, posDiff},
 			mockSetup: func(m *svcmocks.AlertService) {

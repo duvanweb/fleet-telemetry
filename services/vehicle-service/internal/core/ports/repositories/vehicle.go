@@ -6,8 +6,9 @@ import (
 	"fleet/vehicle-service/internal/core/domain"
 )
 
-//go:generate mockery --name VehicleRepository --dir=. --output=./mocks
 // VehicleRepository defines persistence operations for vehicles.
+//
+//go:generate mockery --name VehicleRepository --dir=. --output=./mocks
 type VehicleRepository interface {
 	// Create persists a new vehicle and returns it with its assigned ID.
 	Create(ctx context.Context, v domain.Vehicle) (domain.Vehicle, error)
