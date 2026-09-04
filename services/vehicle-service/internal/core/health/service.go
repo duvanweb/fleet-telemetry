@@ -3,8 +3,8 @@ package health
 import (
 	"context"
 
-	"fleet/vehicle-service/internal/core/domain"
 	"fleet/shared/pkg/logger"
+	"fleet/vehicle-service/internal/core/domain"
 )
 
 // Service implements health check logic.

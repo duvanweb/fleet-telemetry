@@ -6,9 +6,9 @@ import (
 	"fleet/alert-service/internal/core/alerts"
 	"fleet/alert-service/internal/core/health"
 	stopped_detection "fleet/alert-service/internal/core/stopped_detection"
-	alertrepo "fleet/alert-service/internal/infrastructure/postgres/repositories/alert"
 	"fleet/alert-service/internal/infrastructure/api/router"
 	"fleet/alert-service/internal/infrastructure/postgres"
+	alertrepo "fleet/alert-service/internal/infrastructure/postgres/repositories/alert"
 	"fleet/alert-service/internal/infrastructure/rabbitmq"
 	"fleet/shared/pkg/logger"
 )

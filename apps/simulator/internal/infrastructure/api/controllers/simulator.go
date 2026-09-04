@@ -6,11 +6,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"fleet/shared/pkg/logger"
 	"fleet/simulator/internal/core/domain"
 	"fleet/simulator/internal/core/ports/services"
 	"fleet/simulator/internal/infrastructure/api/dtos"
 	apierrors "fleet/simulator/internal/infrastructure/api/errors"
-	"fleet/shared/pkg/logger"
 )
 
 // Simulator is the HTTP controller for simulator endpoints.

@@ -7,11 +7,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"fleet/shared/pkg/logger"
 	"fleet/telemetry-service/internal/core/domain"
 	"fleet/telemetry-service/internal/core/ports/services"
 	"fleet/telemetry-service/internal/infrastructure/api/dtos"
 	apierrors "fleet/telemetry-service/internal/infrastructure/api/errors"
-	"fleet/shared/pkg/logger"
 )
 
 // Telemetry is the HTTP controller for telemetry-related endpoints.
