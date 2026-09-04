@@ -15,7 +15,8 @@ import (
 type Controllers struct {
 	fx.In
 
-	Health *controllers.Health
+	Health    *controllers.Health
+	Telemetry *controllers.Telemetry
 }
 
 // Router wraps the chi mux with its controllers.
@@ -41,6 +42,9 @@ func (r *Router) start(basePath string) http.Handler {
 	r.server.Route(basePath, func(route chi.Router) {
 		route.Get("/health", r.controllers.Health.GetHealth)
 		route.Get("/ready", r.controllers.Health.GetReady)
+
+		route.Post("/telemetry", r.controllers.Telemetry.IngestTelemetry)
+		route.Get("/vehicles/{id}/telemetry", r.controllers.Telemetry.GetByVehicleID)
 	})
 
 	return r.server
