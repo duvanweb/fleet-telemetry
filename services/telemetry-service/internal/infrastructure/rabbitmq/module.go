@@ -44,7 +44,21 @@ func registerWorkerHooks(lc fx.Lifecycle, worker *OutboxWorker) {
 	})
 }
 
-// Module wires the RabbitMQ connection, publisher, and outbox worker into the FX dependency graph.
+func registerRealtimeConsumerHooks(lc fx.Lifecycle, consumer *RealtimeConsumer) {
+	ctx, cancel := context.WithCancel(context.Background())
+	lc.Append(fx.Hook{
+		OnStart: func(_ context.Context) error {
+			go consumer.start(ctx)
+			return nil
+		},
+		OnStop: func(_ context.Context) error {
+			cancel()
+			return nil
+		},
+	})
+}
+
+// Module wires the RabbitMQ connection, publisher, outbox worker, and realtime consumer into the FX dependency graph.
 func Module() fx.Option {
 	return fx.Module(
 		"rabbitmq",
@@ -53,10 +67,12 @@ func Module() fx.Option {
 			newConnection,
 			newPublisher,
 			newOutboxWorker,
+			newRealtimeConsumer,
 		),
 		fx.Invoke(
 			registerConnectionHooks,
 			registerWorkerHooks,
+			registerRealtimeConsumerHooks,
 		),
 	)
 }

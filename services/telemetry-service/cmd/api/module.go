@@ -12,6 +12,7 @@ import (
 	telemetryrepo "fleet/telemetry-service/internal/infrastructure/postgres/repositories/telemetry"
 	"fleet/telemetry-service/internal/infrastructure/rabbitmq"
 	redisinfra "fleet/telemetry-service/internal/infrastructure/redis"
+	"fleet/telemetry-service/internal/infrastructure/sse"
 	"fleet/shared/pkg/logger"
 )
 
@@ -21,6 +22,7 @@ func Module() fx.Option {
 		fx.Provide(func() (logger.Logger, error) {
 			return logger.NewLogger()
 		}),
+		fx.Provide(sse.NewHub),
 		health.Module,
 		postgres.Module(),
 		telemetryrepo.Module(),
