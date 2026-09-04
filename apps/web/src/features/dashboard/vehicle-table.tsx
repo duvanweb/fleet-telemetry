@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 import type { Vehicle } from '../vehicles/types'
 import type { VehicleState, VehicleStatus } from './types'
 
@@ -54,7 +56,11 @@ export function VehicleTable({ vehicles, vehicleStates }: Props) {
                 : '—'
               return (
                 <tr key={v.id} className='hover:bg-gray-50 transition-colors'>
-                  <td className='px-4 py-3 font-medium text-gray-800'>{v.name}</td>
+                  <td className='px-4 py-3 font-medium'>
+                    <Link to={`/vehicles/${v.id}`} className='text-blue-600 hover:underline'>
+                      {v.name}
+                    </Link>
+                  </td>
                   <td className='px-4 py-3 text-gray-600 font-mono'>{v.plate}</td>
                   <td className='px-4 py-3'>
                     <StatusBadge status={status} />

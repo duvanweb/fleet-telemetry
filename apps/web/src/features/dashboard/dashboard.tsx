@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { AlertsPanel } from './alerts-panel'
+import { FleetMap } from './fleet-map'
 import { FleetMetrics } from './fleet-metrics'
 import { VehicleTable } from './vehicle-table'
 import { useDashboardAlerts, useDashboardVehicles } from './use-dashboard'
@@ -47,6 +48,8 @@ export default function Dashboard() {
         ) : (
           <>
             <FleetMetrics vehicles={vehicles} alerts={alerts} vehicleStates={vehicleStates} />
+
+            <FleetMap vehicles={vehicles} vehicleStates={vehicleStates} />
 
             <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
               <div className='lg:col-span-2'>
