@@ -19,3 +19,18 @@ func GetTestVehicle() domain.Vehicle {
 		DeletedAt:  nil,
 	}
 }
+
+// GetTestDeletedVehicle returns a Vehicle fixture with a non-nil DeletedAt for tests.
+func GetTestDeletedVehicle() domain.Vehicle {
+	createdAt := time.Date(2024, 1, 15, 10, 0, 0, 0, time.UTC)
+	deletedAt := time.Date(2024, 2, 1, 12, 0, 0, 0, time.UTC)
+	return domain.Vehicle{
+		ID:         "01HQZK9M0XVNP3F7BRDT4YEWCY",
+		ExternalID: "EXT-002",
+		Plate:      "DEF-456",
+		Name:       "Deleted Vehicle",
+		CreatedAt:  createdAt,
+		UpdatedAt:  deletedAt,
+		DeletedAt:  &deletedAt,
+	}
+}
