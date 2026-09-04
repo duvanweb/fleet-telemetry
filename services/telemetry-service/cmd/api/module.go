@@ -9,6 +9,7 @@ import (
 	vehicle_client "fleet/telemetry-service/internal/infrastructure/http/vehicle_client"
 	"fleet/telemetry-service/internal/infrastructure/postgres"
 	telemetryrepo "fleet/telemetry-service/internal/infrastructure/postgres/repositories/telemetry"
+	redisinfra "fleet/telemetry-service/internal/infrastructure/redis"
 	"fleet/shared/pkg/logger"
 )
 
@@ -22,6 +23,7 @@ func Module() fx.Option {
 		postgres.Module(),
 		telemetryrepo.Module(),
 		vehicle_client.Module(),
+		redisinfra.Module(),
 		telemetrycore.Module(),
 		router.Module(),
 	)

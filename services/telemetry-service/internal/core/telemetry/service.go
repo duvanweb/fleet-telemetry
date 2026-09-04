@@ -12,7 +12,11 @@ import (
 	"fleet/shared/pkg/logger"
 )
 
-const maxFutureDuration = 5 * time.Minute
+const (
+	maxFutureDuration   = 5 * time.Minute
+	dedupTTL            = 60 * time.Second
+	lastPositionTTL     = 10 * time.Minute
+)
 
 // Repositories holds repository dependencies for the telemetry service.
 type Repositories struct {
@@ -22,6 +26,7 @@ type Repositories struct {
 // Resources holds external resource dependencies for the telemetry service.
 type Resources struct {
 	VehicleChecker resources.VehicleChecker
+	Cache          resources.TelemetryCache
 }
 
 // Service implements TelemetryService.
@@ -68,6 +73,22 @@ func (s *Service) IngestTelemetry(ctx context.Context, point domain.TelemetryPoi
 	}
 
 	point.DeduplicationKey = computeDeduplicationKey(point)
+
+	isDup, err := s.resources.Cache.CheckDedup(ctx, point.DeduplicationKey)
+	if err != nil {
+		s.logger.Errorw(ctx, "failed to check dedup key", "vehicle_id", point.VehicleID, "error", err)
+		return domain.TelemetryPoint{}, err
+	}
+
+	if isDup {
+		return domain.TelemetryPoint{}, domain.ErrDuplicateTelemetry
+	}
+
+	if err := s.resources.Cache.SetDedup(ctx, point.DeduplicationKey, dedupTTL); err != nil {
+		s.logger.Errorw(ctx, "failed to set dedup key", "vehicle_id", point.VehicleID, "error", err)
+		return domain.TelemetryPoint{}, err
+	}
+
 	point.ReceivedAt = time.Now().UTC()
 
 	saved, err := s.repositories.Telemetry.Create(ctx, point)
@@ -76,7 +97,24 @@ func (s *Service) IngestTelemetry(ctx context.Context, point domain.TelemetryPoi
 		return domain.TelemetryPoint{}, err
 	}
 
+	if err := s.updateLastPosition(ctx, saved); err != nil {
+		s.logger.Warnw(ctx, "failed to update last position cache", "vehicle_id", saved.VehicleID, "error", err)
+	}
+
 	return saved, nil
+}
+
+func (s *Service) updateLastPosition(ctx context.Context, point domain.TelemetryPoint) error {
+	last, found, err := s.resources.Cache.GetLastPosition(ctx, point.VehicleID)
+	if err != nil {
+		return err
+	}
+
+	if found && point.DeviceTimestamp.Before(last.DeviceTimestamp) {
+		return nil
+	}
+
+	return s.resources.Cache.SetLastPosition(ctx, point.VehicleID, point, lastPositionTTL)
 }
 
 func validateCoordinates(lat, lon float64) error {

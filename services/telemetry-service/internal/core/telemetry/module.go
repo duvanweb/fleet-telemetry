@@ -9,8 +9,8 @@ import (
 	"fleet/shared/pkg/logger"
 )
 
-func newService(log logger.Logger, repo repositories.TelemetryRepository, checker resources.VehicleChecker) *Service {
-	return NewService(log, Repositories{Telemetry: repo}, Resources{VehicleChecker: checker})
+func newService(log logger.Logger, repo repositories.TelemetryRepository, checker resources.VehicleChecker, cache resources.TelemetryCache) *Service {
+	return NewService(log, Repositories{Telemetry: repo}, Resources{VehicleChecker: checker, Cache: cache})
 }
 
 // Module wires the telemetry domain into the FX dependency graph.
