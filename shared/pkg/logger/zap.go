@@ -4,32 +4,38 @@ import (
 	"context"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type zapLogger struct {
-	sugar *zap.SugaredLogger
+	log *zap.SugaredLogger
 }
 
-// NewZapLogger creates and returns a Logger backed by a Zap production logger.
-func NewZapLogger() (Logger, error) {
-	base, err := zap.NewProduction()
+// NewLogger creates a production zap logger wrapped behind Logger.
+func NewLogger() (Logger, error) {
+	cfg := zap.NewProductionConfig()
+	cfg.EncoderConfig.TimeKey = "ts"
+	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	base, err := cfg.Build()
 	if err != nil {
 		return nil, err
 	}
-	return &zapLogger{sugar: base.Sugar()}, nil
+
+	return &zapLogger{log: base.Sugar()}, nil
 }
 
-// Errorw logs an error message with structured key-value pairs.
-func (l *zapLogger) Errorw(_ context.Context, msg string, keysAndValues ...interface{}) {
-	l.sugar.Errorw(msg, keysAndValues...)
+// Infow logs an info message with structured key/value pairs.
+func (z *zapLogger) Infow(_ context.Context, msg string, keysAndValues ...any) {
+	z.log.Infow(msg, keysAndValues...)
 }
 
-// Infow logs an informational message with structured key-value pairs.
-func (l *zapLogger) Infow(_ context.Context, msg string, keysAndValues ...interface{}) {
-	l.sugar.Infow(msg, keysAndValues...)
+// Warnw logs a warning message with structured key/value pairs.
+func (z *zapLogger) Warnw(_ context.Context, msg string, keysAndValues ...any) {
+	z.log.Warnw(msg, keysAndValues...)
 }
 
-// Warnw logs a warning message with structured key-value pairs.
-func (l *zapLogger) Warnw(_ context.Context, msg string, keysAndValues ...interface{}) {
-	l.sugar.Warnw(msg, keysAndValues...)
+// Errorw logs an error message with structured key/value pairs.
+func (z *zapLogger) Errorw(_ context.Context, msg string, keysAndValues ...any) {
+	z.log.Errorw(msg, keysAndValues...)
 }
