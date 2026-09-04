@@ -1,5 +1,9 @@
 package sql
 
+const InsertOutboxEventInTx = `
+INSERT INTO outbox_events (id, event_type, payload, status, created_at)
+VALUES ($1, $2, $3, $4, $5)`
+
 const InsertTelemetry = `
 INSERT INTO telemetry_points
     (id, vehicle_id, latitude, longitude, device_timestamp, received_at, deduplication_key)

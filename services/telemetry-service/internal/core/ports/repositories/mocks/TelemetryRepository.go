@@ -42,6 +42,34 @@ func (_m *TelemetryRepository) Create(ctx context.Context, point domain.Telemetr
 	return r0, r1
 }
 
+// CreateWithOutbox provides a mock function with given fields: ctx, point, event
+func (_m *TelemetryRepository) CreateWithOutbox(ctx context.Context, point domain.TelemetryPoint, event domain.OutboxEvent) (domain.TelemetryPoint, error) {
+	ret := _m.Called(ctx, point, event)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateWithOutbox")
+	}
+
+	var r0 domain.TelemetryPoint
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, domain.TelemetryPoint, domain.OutboxEvent) (domain.TelemetryPoint, error)); ok {
+		return rf(ctx, point, event)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, domain.TelemetryPoint, domain.OutboxEvent) domain.TelemetryPoint); ok {
+		r0 = rf(ctx, point, event)
+	} else {
+		r0 = ret.Get(0).(domain.TelemetryPoint)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, domain.TelemetryPoint, domain.OutboxEvent) error); ok {
+		r1 = rf(ctx, point, event)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetByVehicleID provides a mock function with given fields: ctx, vehicleID
 func (_m *TelemetryRepository) GetByVehicleID(ctx context.Context, vehicleID string) ([]domain.TelemetryPoint, error) {
 	ret := _m.Called(ctx, vehicleID)

@@ -60,6 +60,58 @@ func (r *Repository) Create(ctx context.Context, point domain.TelemetryPoint) (d
 	return saved, nil
 }
 
+// CreateWithOutbox persists a telemetry point and an outbox event atomically in a single transaction.
+func (r *Repository) CreateWithOutbox(ctx context.Context, point domain.TelemetryPoint, event domain.OutboxEvent) (domain.TelemetryPoint, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return domain.TelemetryPoint{}, fmt.Errorf("beginning transaction: %w", err)
+	}
+	defer tx.Rollback() //nolint:errcheck
+
+	var saved domain.TelemetryPoint
+	err = tx.QueryRowContext(ctx, sqlqueries.InsertTelemetry,
+		point.ID,
+		point.VehicleID,
+		point.Latitude,
+		point.Longitude,
+		point.DeviceTimestamp,
+		point.ReceivedAt,
+		point.DeduplicationKey,
+	).Scan(
+		&saved.ID,
+		&saved.VehicleID,
+		&saved.Latitude,
+		&saved.Longitude,
+		&saved.DeviceTimestamp,
+		&saved.ReceivedAt,
+		&saved.DeduplicationKey,
+	)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return domain.TelemetryPoint{}, domain.ErrDuplicateTelemetry
+		}
+		return domain.TelemetryPoint{}, fmt.Errorf("inserting telemetry point: %w", err)
+	}
+
+	_, err = tx.ExecContext(ctx, sqlqueries.InsertOutboxEventInTx,
+		event.ID,
+		event.EventType,
+		event.Payload,
+		event.Status,
+		event.CreatedAt,
+	)
+	if err != nil {
+		return domain.TelemetryPoint{}, fmt.Errorf("inserting outbox event: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return domain.TelemetryPoint{}, fmt.Errorf("committing transaction: %w", err)
+	}
+
+	return saved, nil
+}
+
 // GetByVehicleID returns all telemetry points for the given vehicle ordered by device_timestamp ASC.
 func (r *Repository) GetByVehicleID(ctx context.Context, vehicleID string) ([]domain.TelemetryPoint, error) {
 	rows, err := r.db.QueryContext(ctx, sqlqueries.SelectByVehicleID, vehicleID)

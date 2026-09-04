@@ -13,6 +13,9 @@ type TelemetryRepository interface {
 	// Create persists a new telemetry point and returns it with its assigned ID.
 	Create(ctx context.Context, point domain.TelemetryPoint) (domain.TelemetryPoint, error)
 
+	// CreateWithOutbox persists a telemetry point and an outbox event atomically in a single transaction.
+	CreateWithOutbox(ctx context.Context, point domain.TelemetryPoint, event domain.OutboxEvent) (domain.TelemetryPoint, error)
+
 	// GetByVehicleID returns all telemetry points for the given vehicle, ordered by device_timestamp ASC.
 	GetByVehicleID(ctx context.Context, vehicleID string) ([]domain.TelemetryPoint, error)
 }

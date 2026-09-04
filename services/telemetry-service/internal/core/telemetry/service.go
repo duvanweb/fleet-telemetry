@@ -6,17 +6,33 @@ import (
 	"fmt"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
+	"github.com/oklog/ulid/v2"
+
 	"fleet/telemetry-service/internal/core/domain"
 	"fleet/telemetry-service/internal/core/ports/repositories"
 	"fleet/telemetry-service/internal/core/ports/resources"
 	"fleet/shared/pkg/logger"
 )
 
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 const (
-	maxFutureDuration   = 5 * time.Minute
-	dedupTTL            = 60 * time.Second
-	lastPositionTTL     = 10 * time.Minute
+	maxFutureDuration = 5 * time.Minute
+	dedupTTL          = 60 * time.Second
+	lastPositionTTL   = 10 * time.Minute
+	outboxBatchSize   = 10
 )
+
+// telemetryEventPayload is the JSON payload stored in the outbox for telemetry.received events.
+type telemetryEventPayload struct {
+	TelemetryID     string    `json:"telemetry_id"`
+	VehicleID       string    `json:"vehicle_id"`
+	Latitude        float64   `json:"latitude"`
+	Longitude       float64   `json:"longitude"`
+	DeviceTimestamp time.Time `json:"device_timestamp"`
+	ReceivedAt      time.Time `json:"received_at"`
+}
 
 // Repositories holds repository dependencies for the telemetry service.
 type Repositories struct {
@@ -52,7 +68,7 @@ func (s *Service) GetByVehicleID(ctx context.Context, vehicleID string) ([]domai
 	return points, nil
 }
 
-// IngestTelemetry validates and persists a GPS telemetry point.
+// IngestTelemetry validates and persists a GPS telemetry point with an outbox event.
 func (s *Service) IngestTelemetry(ctx context.Context, point domain.TelemetryPoint) (domain.TelemetryPoint, error) {
 	if err := validateCoordinates(point.Latitude, point.Longitude); err != nil {
 		return domain.TelemetryPoint{}, err
@@ -72,6 +88,7 @@ func (s *Service) IngestTelemetry(ctx context.Context, point domain.TelemetryPoi
 		return domain.TelemetryPoint{}, domain.ErrVehicleNotFound
 	}
 
+	point.ID = ulid.Make().String()
 	point.DeduplicationKey = computeDeduplicationKey(point)
 
 	isDup, err := s.resources.Cache.CheckDedup(ctx, point.DeduplicationKey)
@@ -91,7 +108,13 @@ func (s *Service) IngestTelemetry(ctx context.Context, point domain.TelemetryPoi
 
 	point.ReceivedAt = time.Now().UTC()
 
-	saved, err := s.repositories.Telemetry.Create(ctx, point)
+	outboxEvent, err := buildOutboxEvent(point)
+	if err != nil {
+		s.logger.Errorw(ctx, "failed to build outbox event", "vehicle_id", point.VehicleID, "error", err)
+		return domain.TelemetryPoint{}, err
+	}
+
+	saved, err := s.repositories.Telemetry.CreateWithOutbox(ctx, point, outboxEvent)
 	if err != nil {
 		s.logger.Errorw(ctx, "failed to persist telemetry point", "vehicle_id", point.VehicleID, "error", err)
 		return domain.TelemetryPoint{}, err
@@ -102,6 +125,28 @@ func (s *Service) IngestTelemetry(ctx context.Context, point domain.TelemetryPoi
 	}
 
 	return saved, nil
+}
+
+func buildOutboxEvent(point domain.TelemetryPoint) (domain.OutboxEvent, error) {
+	payload, err := json.Marshal(telemetryEventPayload{
+		TelemetryID:     point.ID,
+		VehicleID:       point.VehicleID,
+		Latitude:        point.Latitude,
+		Longitude:       point.Longitude,
+		DeviceTimestamp: point.DeviceTimestamp,
+		ReceivedAt:      point.ReceivedAt,
+	})
+	if err != nil {
+		return domain.OutboxEvent{}, fmt.Errorf("marshalling outbox payload: %w", err)
+	}
+
+	return domain.OutboxEvent{
+		ID:        ulid.Make().String(),
+		EventType: "telemetry.received",
+		Payload:   payload,
+		Status:    domain.OutboxStatusPending,
+		CreatedAt: time.Now().UTC(),
+	}, nil
 }
 
 func (s *Service) updateLastPosition(ctx context.Context, point domain.TelemetryPoint) error {

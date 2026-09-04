@@ -21,6 +21,7 @@ var (
 	errTest  = errors.New("unexpected error")
 	anyctx   = mock.Anything
 	anypoint = mock.Anything
+	anyevent = mock.Anything
 	anyttl   = mock.Anything
 	anystr   = mock.Anything
 )
@@ -113,7 +114,7 @@ func TestService_IngestTelemetry(t *testing.T) {
 	cacheSuccessMock.On("SetLastPosition", anyctx, fixture.VehicleID, anypoint, anyttl).Return(nil)
 
 	repoSuccessMock := &repomocks.TelemetryRepository{}
-	repoSuccessMock.On("Create", anyctx, anypoint).Return(fixture, nil)
+	repoSuccessMock.On("CreateWithOutbox", anyctx, anypoint, anyevent).Return(fixture, nil)
 
 	tests := []struct {
 		name          string
@@ -158,7 +159,7 @@ func TestService_IngestTelemetry(t *testing.T) {
 				}(),
 				Telemetry: func() *repomocks.TelemetryRepository {
 					m := &repomocks.TelemetryRepository{}
-					m.On("Create", anyctx, anypoint).Return(fixture, nil)
+					m.On("CreateWithOutbox", anyctx, anypoint, anyevent).Return(fixture, nil)
 					return m
 				}(),
 			},
@@ -245,7 +246,7 @@ func TestService_IngestTelemetry(t *testing.T) {
 				}(),
 				Telemetry: func() *repomocks.TelemetryRepository {
 					m := &repomocks.TelemetryRepository{}
-					m.On("Create", anyctx, anypoint).Return(domain.TelemetryPoint{}, domain.ErrDuplicateTelemetry)
+					m.On("CreateWithOutbox", anyctx, anypoint, anyevent).Return(domain.TelemetryPoint{}, domain.ErrDuplicateTelemetry)
 					return m
 				}(),
 			},
@@ -299,7 +300,7 @@ func TestService_IngestTelemetry(t *testing.T) {
 			expectedError: errTest,
 		},
 		{
-			name:  "fails when repository Create fails",
+			name:  "fails when repository CreateWithOutbox fails",
 			point: validPoint,
 			dependencies: Dependencies{
 				VehicleChecker: func() *resmocks.VehicleChecker {
@@ -315,7 +316,7 @@ func TestService_IngestTelemetry(t *testing.T) {
 				}(),
 				Telemetry: func() *repomocks.TelemetryRepository {
 					m := &repomocks.TelemetryRepository{}
-					m.On("Create", anyctx, anypoint).Return(domain.TelemetryPoint{}, errTest)
+					m.On("CreateWithOutbox", anyctx, anypoint, anyevent).Return(domain.TelemetryPoint{}, errTest)
 					return m
 				}(),
 			},
