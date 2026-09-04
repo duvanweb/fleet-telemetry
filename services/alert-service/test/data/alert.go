@@ -20,6 +20,22 @@ func GetTestAlert() domain.Alert {
 	}
 }
 
+// GetTestResolvedAlert returns a test Alert fixture with status RESOLVED.
+func GetTestResolvedAlert() domain.Alert {
+	now := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	resolved := now.Add(time.Hour)
+	return domain.Alert{
+		ID:         "01HQ0000000000000000000001",
+		VehicleID:  "vehicle-1",
+		Type:       domain.AlertTypeVehicleStopped,
+		Status:     domain.AlertStatusResolved,
+		StartedAt:  now,
+		ResolvedAt: &resolved,
+		CreatedAt:  now,
+		UpdatedAt:  resolved,
+	}
+}
+
 // GetTestTelemetryEvent returns a test TelemetryEvent fixture.
 func GetTestTelemetryEvent() domain.TelemetryEvent {
 	now := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)

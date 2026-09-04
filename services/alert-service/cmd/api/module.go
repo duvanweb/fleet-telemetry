@@ -3,9 +3,12 @@ package main
 import (
 	"go.uber.org/fx"
 
+	"fleet/alert-service/internal/core/alerts"
 	"fleet/alert-service/internal/core/health"
 	stopped_detection "fleet/alert-service/internal/core/stopped_detection"
+	alertrepo "fleet/alert-service/internal/infrastructure/postgres/repositories/alert"
 	"fleet/alert-service/internal/infrastructure/api/router"
+	"fleet/alert-service/internal/infrastructure/postgres"
 	"fleet/alert-service/internal/infrastructure/rabbitmq"
 	"fleet/shared/pkg/logger"
 )
@@ -17,7 +20,10 @@ func Module() fx.Option {
 			return logger.NewLogger()
 		}),
 		health.Module,
+		alerts.Module,
 		stopped_detection.Module(),
+		postgres.Module(),
+		alertrepo.Module(),
 		rabbitmq.Module(),
 		router.Module(),
 	)
