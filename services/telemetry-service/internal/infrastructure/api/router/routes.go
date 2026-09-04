@@ -15,6 +15,7 @@ import (
 type Controllers struct {
 	fx.In
 
+	Events    *controllers.Events
 	Health    *controllers.Health
 	Telemetry *controllers.Telemetry
 }
@@ -42,6 +43,8 @@ func (r *Router) start(basePath string) http.Handler {
 	r.server.Route(basePath, func(route chi.Router) {
 		route.Get("/health", r.controllers.Health.GetHealth)
 		route.Get("/ready", r.controllers.Health.GetReady)
+
+		route.Get("/events", r.controllers.Events.GetEvents)
 
 		route.Post("/telemetry", r.controllers.Telemetry.IngestTelemetry)
 		route.Get("/vehicles/{id}/telemetry", r.controllers.Telemetry.GetByVehicleID)
