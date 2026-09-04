@@ -4,7 +4,10 @@ import (
 	"go.uber.org/fx"
 
 	"fleet/vehicle-service/internal/core/health"
+	"fleet/vehicle-service/internal/core/vehicle"
 	"fleet/vehicle-service/internal/infrastructure/api/router"
+	"fleet/vehicle-service/internal/infrastructure/postgres"
+	vehiclerepo "fleet/vehicle-service/internal/infrastructure/postgres/repositories/vehicle"
 	"fleet/shared/pkg/logger"
 )
 
@@ -15,6 +18,9 @@ func Module() fx.Option {
 			return logger.NewLogger()
 		}),
 		health.Module,
+		postgres.Module(),
+		vehiclerepo.Module(),
+		vehicle.Module(),
 		router.Module(),
 	)
 }
