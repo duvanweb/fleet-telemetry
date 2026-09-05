@@ -3,8 +3,8 @@ package vehicle
 import (
 	"go.uber.org/fx"
 
-	"fleet/vehicle-service/internal/core/ports/repositories"
 	"fleet/shared/pkg/logger"
+	"fleet/vehicle-service/internal/core/ports/repositories"
 )
 
 func newRepository(log logger.Logger, db repositories.Databaser) repositories.VehicleRepository {

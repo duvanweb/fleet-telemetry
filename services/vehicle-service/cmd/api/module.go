@@ -3,12 +3,12 @@ package main
 import (
 	"go.uber.org/fx"
 
+	"fleet/shared/pkg/logger"
 	"fleet/vehicle-service/internal/core/health"
 	"fleet/vehicle-service/internal/core/vehicle"
 	"fleet/vehicle-service/internal/infrastructure/api/router"
 	"fleet/vehicle-service/internal/infrastructure/postgres"
 	vehiclerepo "fleet/vehicle-service/internal/infrastructure/postgres/repositories/vehicle"
-	"fleet/shared/pkg/logger"
 )
 
 // Module assembles all FX modules for the vehicle-service.

@@ -3,9 +3,9 @@ package vehicle
 import (
 	"go.uber.org/fx"
 
+	"fleet/shared/pkg/logger"
 	"fleet/vehicle-service/internal/core/ports/repositories"
 	"fleet/vehicle-service/internal/core/ports/services"
-	"fleet/shared/pkg/logger"
 )
 
 func newService(log logger.Logger, repo repositories.VehicleRepository) *Service {

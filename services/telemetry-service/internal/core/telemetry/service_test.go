@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"fleet/shared/pkg/logger"
 	"fleet/telemetry-service/internal/core/domain"
-	"fleet/telemetry-service/internal/core/telemetry"
 	repomocks "fleet/telemetry-service/internal/core/ports/repositories/mocks"
 	resmocks "fleet/telemetry-service/internal/core/ports/resources/mocks"
+	"fleet/telemetry-service/internal/core/telemetry"
 	testdata "fleet/telemetry-service/test/data"
-	"fleet/shared/pkg/logger"
 )
 
 var (

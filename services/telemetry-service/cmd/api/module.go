@@ -3,6 +3,7 @@ package main
 import (
 	"go.uber.org/fx"
 
+	"fleet/shared/pkg/logger"
 	"fleet/telemetry-service/internal/core/health"
 	telemetrycore "fleet/telemetry-service/internal/core/telemetry"
 	"fleet/telemetry-service/internal/infrastructure/api/router"
@@ -13,7 +14,6 @@ import (
 	"fleet/telemetry-service/internal/infrastructure/rabbitmq"
 	redisinfra "fleet/telemetry-service/internal/infrastructure/redis"
 	"fleet/telemetry-service/internal/infrastructure/sse"
-	"fleet/shared/pkg/logger"
 )
 
 // Module assembles all FX modules for the telemetry-service.

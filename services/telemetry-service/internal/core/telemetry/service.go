@@ -9,10 +9,10 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/oklog/ulid/v2"
 
+	"fleet/shared/pkg/logger"
 	"fleet/telemetry-service/internal/core/domain"
 	"fleet/telemetry-service/internal/core/ports/repositories"
 	"fleet/telemetry-service/internal/core/ports/resources"
-	"fleet/shared/pkg/logger"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

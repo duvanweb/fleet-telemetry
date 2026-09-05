@@ -3,9 +3,11 @@ package main
 import (
 	"go.uber.org/fx"
 
-	"fleet/simulator/internal/core/health"
-	"fleet/simulator/internal/infrastructure/api/router"
 	"fleet/shared/pkg/logger"
+	"fleet/simulator/internal/core/health"
+	"fleet/simulator/internal/core/simulator"
+	"fleet/simulator/internal/infrastructure/api/router"
+	telemetryclient "fleet/simulator/internal/infrastructure/http/telemetry_client"
 )
 
 // Module assembles all FX modules for the simulator.
@@ -15,6 +17,8 @@ func Module() fx.Option {
 			return logger.NewLogger()
 		}),
 		health.Module,
+		telemetryclient.Module(),
+		simulator.Module,
 		router.Module(),
 	)
 }

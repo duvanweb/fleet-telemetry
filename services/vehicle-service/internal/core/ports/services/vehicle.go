@@ -6,8 +6,9 @@ import (
 	"fleet/vehicle-service/internal/core/domain"
 )
 
-//go:generate mockery --name VehicleService --dir=. --output=./mocks
 // VehicleService defines the business operations for managing vehicles.
+//
+//go:generate mockery --name VehicleService --dir=. --output=./mocks
 type VehicleService interface {
 	// Create validates and persists a new vehicle.
 	Create(ctx context.Context, v domain.Vehicle) (domain.Vehicle, error)

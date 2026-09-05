@@ -9,8 +9,8 @@ import (
 
 	goredis "github.com/redis/go-redis/v9"
 
-	"fleet/telemetry-service/internal/core/domain"
 	"fleet/shared/pkg/redisclient"
+	"fleet/telemetry-service/internal/core/domain"
 )
 
 type lastPositionEntry struct {
