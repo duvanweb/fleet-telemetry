@@ -64,7 +64,10 @@ func (s *Service) Start(ctx context.Context, req domain.StartRequest) error {
 		req.IntervalMs = 5000
 	}
 
-	runCtx, cancel := context.WithCancel(ctx)
+	// Use context.Background() so the simulation goroutine outlives the HTTP request lifecycle.
+	// r.Context() is cancelled by Go's net/http when ServeHTTP returns, which would kill the
+	// goroutine immediately. The caller's ctx is only used for the synchronous setup above.
+	runCtx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
 
 	now := time.Now().UTC()
